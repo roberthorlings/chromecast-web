@@ -17,7 +17,7 @@ chromecast_ip = "192.168.178.32"
 url_prefix = "/chromecast"
 
 # Timeout to wait for the status (ms)
-status_timeout = 8000
+status_timeout = 5000
 
 """
 Handles status updates 
@@ -55,10 +55,13 @@ def get_cast_with_status(chromecast_ip):
 	# Wait for the status, although not forever
 	starttime = time.time() * 1000
 	wait_until = starttime + status_timeout
-	while ( time.time() * 1000 ) < wait_until and not ( status_handler.cast_status and status_handler.media_status ):
+	while ( time.time() * 1000 ) < wait_until and not (status_handler.cast_status and status_handler.media_status):
 		pass
 	
 	return cast
+
+# Initialize chromecast object
+cast = get_cast_with_status(chromecast_ip)
 
 # 
 # Web.py part to initialize the application
@@ -82,11 +85,6 @@ urls = (
 
 class status:
     def GET(self):
-    	try:
-            cast = get_cast_with_status(chromecast_ip)
-        except pychromecast.error.ChromecastConnectionError:
-            return web.notfound("Chromecast not found at IP " + chromecast_ip)
-        
         if( cast.status ):    
             return json.dumps(cast.status.__dict__)
         else:
@@ -95,11 +93,6 @@ class status:
 
 class media_status:
     def GET(self):
-    	try:
-            cast = get_cast_with_status(chromecast_ip)
-        except pychromecast.error.ChromecastConnectionError:
-            return web.notfound("Chromecast not found at IP " + chromecast_ip)
-        
         if( cast.media_controller and cast.media_controller.status ):    
             return json.dumps(cast.media_controller.status.__dict__)
         else:
@@ -107,11 +100,6 @@ class media_status:
 
 class full_status:
     def GET(self):
-        try:
-            cast = get_cast_with_status(chromecast_ip)
-        except pychromecast.error.ChromecastConnectionError:
-            return web.notfound("Chromecast not found at IP " + chromecast_ip)
-
         return json.dumps({ 
         	'cast': cast.status.__dict__ if cast.status else {}, 
         	'media': cast.media_controller.status.__dict__ if cast.media_controller else {}
@@ -119,21 +107,11 @@ class full_status:
 
 class play:
     def POST(self):
-    	try:
-            cast = pychromecast.Chromecast(host=chromecast_ip)
-        except pychromecast.error.ChromecastConnectionError:
-            return web.notfound("Chromecast not found at IP " + chromecast_ip)
-    	
         cast.media_controller.play()
         return ""
 
 class pause:
     def POST(self):
-    	try:
-            cast = get_cast_with_status(chromecast_ip)
-        except pychromecast.error.ChromecastConnectionError:
-            return web.notfound("Chromecast not found at IP " + chromecast_ip)
-    	
     	if cast.is_idle: 
     		return web.BadRequest("Cast is currently idle")
 
@@ -145,21 +123,11 @@ class pause:
 
 class stop:
     def POST(self):
-    	try:
-            cast = pychromecast.Chromecast(host=chromecast_ip)
-        except pychromecast.error.ChromecastConnectionError:
-            return web.notfound("Chromecast not found at IP " + chromecast_ip)
-    	
         cast.media_controller.stop()
         return ""
 
 class skip:
     def POST(self):
-    	try:
-            cast = get_cast_with_status(chromecast_ip)
-        except pychromecast.error.ChromecastConnectionError:
-            return web.notfound("Chromecast not found at IP " + chromecast_ip)
-    	
     	if cast.is_idle: 
     		return web.BadRequest("Cast is currently idle")
 
@@ -178,29 +146,17 @@ class volume:
     	if(volume < 0 or volume > 100):
     		return web.BadRequest("Invalid volume. Valid range is between 0 and 100")
     		
-    	try:
-            cast = pychromecast.Chromecast(host=chromecast_ip)
-        except pychromecast.error.ChromecastConnectionError:
-            return web.notfound("Chromecast not found at IP " + chromecast_ip)
-            
         cast.set_volume( volume / 100.0 )
         return ""
 
 class mute:
     def POST(self):
-    	try:
-            cast = pychromecast.Chromecast(host=chromecast_ip)
-        except pychromecast.error.ChromecastConnectionError:
-            return web.notfound("Chromecast not found at IP " + chromecast_ip)
-        
+        cast.set_volume_muted(True)
         return ""
 
 class unmute:
     def POST(self):
-    	try:
-            cast = pychromecast.Chromecast(host=chromecast_ip)
-        except pychromecast.error.ChromecastConnectionError:
-            return web.notfound("Chromecast not found at IP " + chromecast_ip)
+        cast.set_volume_muted(False)
         return ""
 
 def common_headers():
