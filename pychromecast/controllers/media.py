@@ -405,18 +405,21 @@ class MediaController(BaseController):
                 'contentId': url,
                 'streamType': stream_type,
                 'contentType': content_type,
+                'metadata': {}
             },
             MESSAGE_TYPE: TYPE_LOAD,
             'currentTime': current_time,
             'autoplay': autoplay,
-            'customData': {}
+            'customData': { 'payload': {}},
         }
 
         if title:
             msg['customData']['payload']['title'] = title
+            msg['media']['metadata']['title'] = title
 
         if thumb:
             msg['customData']['payload']['thumb'] = thumb
+            msg['media']['metadata']['images'] = [ { 'url': thumb } ]
 
         self.send_message(msg, inc_session_id=True)
 
