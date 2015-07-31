@@ -1,3 +1,3 @@
 #!/bin/bash
 
-scp -r *.py pi@domoticz.local:/home/pi/tools/chromecast
+scp -r *.py *.php pi@domoticz.local:/home/pi/tools/chromecast

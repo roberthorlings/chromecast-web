@@ -1,9 +1,12 @@
 #!/usr/bin/python
 
 import pychromecast
+import pychromecast.controllers
 import web
 import json
 import time
+import re
+import subprocess
 
 #
 # Variables to set. 
@@ -80,7 +83,9 @@ urls = (
     
     url_prefix + '/volume', 'volume',
     url_prefix + '/mute', 'mute',
-    url_prefix + '/unmute', 'unmute'
+    url_prefix + '/unmute', 'unmute',
+    
+    url_prefix + '/npo', 'npo'
 )
 
 class status:
@@ -116,7 +121,7 @@ class pause:
     		return web.BadRequest("Cast is currently idle")
 
     	if not cast.media_controller.status.supports_pause: 
-    		return web.BadRequest("Current media doesn't support pause")
+    		raise web.BadRequest("Current media doesn't support pause")
     
         cast.media_controller.pause()
         return ""
@@ -132,7 +137,7 @@ class skip:
     		return web.BadRequest("Cast is currently idle")
 
     	if not cast.media_controller.status.supports_seek: 
-    		return web.BadRequest("Current media doesn't support skipping")
+    		raise web.badrequest("Current media doesn't support skipping")
     
         cast.media_controller.skip()
         return ""
@@ -144,11 +149,32 @@ class volume:
     	volume = int(user_data.volume)
     	
     	if(volume < 0 or volume > 100):
-    		return web.BadRequest("Invalid volume. Valid range is between 0 and 100")
+    		raise web.badrequest("Invalid volume. Valid range is between 0 and 100")
     		
         cast.set_volume( volume / 100.0 )
         return ""
 
+class npo:
+    def POST(self):
+        # Channel must be given as parameter. See npo-link.php for possible parameters
+        user_data = web.input(channel='npo1')
+        channel = user_data.channel
+
+        # Validate user input
+        channel = re.sub(r"[^A-Za-z0-9]+", '', channel)
+		
+        # Retrieve the URL using the PHP script
+        proc = subprocess.Popen("php ./npo-link.php " + channel, shell=True, stdout=subprocess.PIPE)
+        channelData = json.loads(proc.stdout.read())
+        
+        # See if the response is a URL (starts with http)
+        if(channelData["success"]):
+            #cast.start_app("E1DEE38A")
+            cast.media_controller.play_media( channelData["stream"], "application/x-mpegurl", channelData["title"], channelData["icon"] )
+            return "OK"
+        else:
+            raise web.internalerror(channelData["error"])
+ 
 class mute:
     def POST(self):
         cast.set_volume_muted(True)
