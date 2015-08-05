@@ -3,7 +3,21 @@
 	// SETTINGS
 	define( "DEBUG", 0 );
 	define( "MAX_TRIES", 20 );
-
+	// END OF SETTINGS
+	
+	/**
+	 * The logic for this script has been created using the information on 
+	 * https://github.com/rg3/youtube-dl/issues/4691. This is a three step process:
+	 * 
+	 *   1. Retrieve a token
+	 *   2. Exchange the token (combined with the stream URL) for an URL with a hash
+	 *   3. Retrieve the final stream URL from the URL with a hash.
+	 * 
+	 * For some reason, the second step sometimes randomly fails. For that reason, the
+	 * script keeps on trying, until a valid response has been given. The maximum number
+	 * of tries can be configured. 
+	 */
+	
 	$tokenUrl = "http://ida.omroep.nl/npoplayer/i.js";
 	$streamUrl = "http://ida.omroep.nl/aapi/?type=jsonp&callback=streamMethod";
 	
@@ -23,24 +37,22 @@
 			"title" => "NPO 3",
 			"icon" => "http://mediadb.omroep.nl/assets/001/504/523/512x341.png"
 		],
-		"journaal24" => [ 
+		"nponieuws" => [ 
 			"stream" => "http://livestreams.omroep.nl/live/npo/thematv/journaal24/journaal24.isml/journaal24.m3u8",
 			"title" => "NPO Nieuws",
 			"icon" => "http://mediadb.omroep.nl/assets/001/504/519/512x341.png"
 		],
-		"politiek24" => 
+		"npopolitiek" => 
 		[ 
 			"stream" => "http://livestreams.omroep.nl/live/npo/thematv/politiek24/politiek24.isml/politiek24.m3u8",
 			"title" => "NPO Politiek",
 			"icon" => "http://mediadb.omroep.nl/assets/001/504/520/512x341.png"
 		],
-		"hollanddoc" =>[ 
+		"npodoc" =>[ 
 			"stream" => "http://livestreams.omroep.nl/live/npo/thematv/hollanddoc24/hollanddoc24.isml/hollanddoc24.m3u8",
 			"title" => "NPO Doc",
 			"icon" => "http://mediadb.omroep.nl/assets/001/504/517/512x341.png"
 		],
-		 
-		
 	];
 	// END OF SETTINGS
 	
