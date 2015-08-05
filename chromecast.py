@@ -13,7 +13,7 @@ import subprocess
 #
 
 # IP address of the chromecast to control
-chromecast_ip = "192.168.178.32"
+chromecast_ip = "192.168.178.34"
 
 # Prefix for all URLs to be handled. E.g. if the application runs on http://localhost/chromecast, 
 # the prefix should be "/chromecast"
